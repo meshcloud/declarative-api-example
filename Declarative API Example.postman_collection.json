@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "5de5edd9-4324-4adb-8894-09cdd1330a85",
+		"name": "Declarative API Example",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3285274"
+	},
+	"item": [
+		{
+			"name": "Get Users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Groups",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/groups",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"groups"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Import Objects",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"kind\": \"user\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"userId\": \"test-user\"\n        },\n        \"spec\": {\n            \"firstName\": \"Test\",\n            \"lastName\": \"User\",\n            \"email\": \"test@user.de\"\n        }\n    },\n    {\n        \"kind\": \"user\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"userId\": \"test-user2\"\n        },\n        \"spec\": {\n            \"firstName\": \"Test\",\n            \"lastName\": \"User2\",\n            \"email\": \"test2@user.de\"\n        }\n    },\n    {\n        \"kind\": \"group\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"name\": \"my-group\"\n        },\n        \"spec\": {\n            \"members\": [\n                \"test-user2\"\n            ]\n        }\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/objects?objectCollection=my-test&owner=ich",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"objects"
+					],
+					"query": [
+						{
+							"key": "objectCollection",
+							"value": "my-test"
+						},
+						{
+							"key": "owner",
+							"value": "ich"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Object Collection",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"my-test\",\n    \"owner\": \"ich\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/objectCollections",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"objectCollections"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

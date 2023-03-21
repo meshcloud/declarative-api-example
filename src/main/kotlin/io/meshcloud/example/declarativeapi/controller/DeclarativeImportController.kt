@@ -16,10 +16,9 @@ class DeclarativeImportController(
   @PutMapping("/objects")
   fun import(
     @RequestBody body: String,
-    @RequestParam(value = "objectCollection", required = false) objectCollectionName: String?,
-    @RequestParam(value = "owner", required = false) owner: String?
+    @RequestParam(value = "objectCollection", required = false) objectCollectionName: String?
     ): ResponseEntity<*> {
-    val importResult = objectImportService.import(body, objectCollectionName, owner)
+    val importResult = objectImportService.import(body, objectCollectionName)
 
     return if (containsError(importResult)) {
       makeErrorResponse(importResult)

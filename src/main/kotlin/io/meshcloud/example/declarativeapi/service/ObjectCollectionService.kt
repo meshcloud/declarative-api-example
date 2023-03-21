@@ -12,25 +12,13 @@ class ObjectCollectionService(
   fun ensureExistsOrThrowOnIllegalUpdate(createRequest: ObjectCollectionCreationRequest): ObjectCollection {
     validateCreationRequestOrThrow(createRequest)
 
-    val existingObjectCollection = objectCollectionRepository.findByName(createRequest.name)
-      ?: return objectCollectionRepository.save(createRequest.toObjectCollection())
-
-    ensureCorrectOwnerOrThrow(existingObjectCollection, createRequest.owner)
-    return existingObjectCollection
+    return objectCollectionRepository.findByName(createRequest.name)
+        ?: return objectCollectionRepository.save(createRequest.toObjectCollection())
   }
 
   private fun validateCreationRequestOrThrow(createRequest: ObjectCollectionCreationRequest) {
-    if (createRequest.name.isBlank() || createRequest.owner.isBlank()) {
-      throw ObjectImportException("The name and owner field of a ObjectCollection must not be empty!")
-    }
-  }
-
-  private fun ensureCorrectOwnerOrThrow(collection: ObjectCollection, owner: String) {
-    if (collection.owner != owner) {
-      throw ObjectImportException(
-        "Cannot access ObjectCollection ${collection.name}. " +
-            "It belongs to a different owner: ${collection.owner}"
-      )
+    if (createRequest.name.isBlank()) {
+      throw ObjectImportException("The name field of a ObjectCollection must not be empty!")
     }
   }
 

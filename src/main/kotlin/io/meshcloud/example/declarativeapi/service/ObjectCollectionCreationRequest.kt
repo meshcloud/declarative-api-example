@@ -3,11 +3,10 @@ package io.meshcloud.example.declarativeapi.service
 import io.meshcloud.example.declarativeapi.entities.ObjectCollection
 
 data class ObjectCollectionCreationRequest(
-    val name: String,
-    val owner: String
+    val name: String
 ) {
 
   fun toObjectCollection(): ObjectCollection {
-    return ObjectCollection(name = this.name, owner = this.owner)
+    return ObjectCollection(name = this.name)
   }
 }

@@ -11,9 +11,6 @@ data class ObjectCollection (
 
   @Column(length = 100, unique = true)
   var name: String,
-
-  @Column(length = 100)
-  val owner: String
 ) {
   fun assignObject(objectEntity: AbstractObjectEntity) {
     val existingCollection = objectEntity.objectCollection

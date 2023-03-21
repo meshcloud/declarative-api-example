@@ -31,8 +31,3 @@ class ObjectCollectionController(
     return ResponseEntity(objectCollection, HttpStatus.CREATED)
   }
 }
-
-private class CreateRequest(
-  val name: String,
-  val owner: String
-)

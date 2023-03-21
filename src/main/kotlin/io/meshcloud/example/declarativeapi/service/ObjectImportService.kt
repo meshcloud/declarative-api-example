@@ -18,12 +18,11 @@ class ObjectImportService(
 
   fun import(
     body: String,
-    objectCollectionName: String? = null,
-    owner: String? = null,
+    objectCollectionName: String? = null
   ): List<ObjectImportResult> {
 
     val objectCollection = try {
-      findObjectCollectionForOwnerIfExistsOrThrow(objectCollectionName, owner)
+      findObjectCollectionIfExistsOrThrow(objectCollectionName)
     } catch (e: IllegalArgumentException) {
       return buildSingleResultWithError("ObjectCollection", e.message)
     }
@@ -108,9 +107,8 @@ class ObjectImportService(
     }
   }
 
-  private fun findObjectCollectionForOwnerIfExistsOrThrow(
-    objectCollectionName: String?,
-    owner: String?
+  private fun findObjectCollectionIfExistsOrThrow(
+      objectCollectionName: String?
   ): ObjectCollection? {
     if (objectCollectionName == null) {
       return null
@@ -120,17 +118,9 @@ class ObjectImportService(
     if (name.isBlank()) {
       throw IllegalArgumentException("ObjectCollection name cannot be blank. (Can be null)")
     }
-    if (owner == null || owner.isBlank()) {
-      throw IllegalArgumentException("Must specify owner for objectCollection $name.")
-    }
 
-    val objectCollection = objectCollectionService.findObjectCollectionByName(name)
-      ?: throw IllegalArgumentException("ObjectCollection $name does not exist.")
-    if (objectCollection.owner != owner) {
-      throw IllegalArgumentException("ObjectCollection $name does not belong to owner $owner.")
-    }
-
-    return objectCollection
+    return objectCollectionService.findObjectCollectionByName(name)
+        ?: throw IllegalArgumentException("ObjectCollection $name does not exist.")
   }
 
   private fun buildSingleResultWithError(objectName: String, message: String?): List<ObjectImportResult> {

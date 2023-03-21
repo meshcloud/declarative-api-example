@@ -84,11 +84,6 @@ class ObjectImportService(
             objectCollection
           )
         }
-
-        ObjectImportResult(
-          apiObject = obj.meaningfulIdentifier,
-          status = ObjectImportResult.ImportStatus.SUCCESS
-        )
       } catch (e: ObjectCollectionAssignmentException) {
         ObjectImportResult(
           apiObject = obj.meaningfulIdentifier,

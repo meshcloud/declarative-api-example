@@ -16,6 +16,6 @@ data class ApiGroup(
   )
 
   @JsonIgnore
-  override val meaningfulIdentifier = "User[${metadata.name}]"
+  override val meaningfulIdentifier = "Group[${metadata.name}]"
 
 }

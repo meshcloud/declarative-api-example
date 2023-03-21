@@ -10,37 +10,44 @@ import org.springframework.stereotype.Component
 
 @Component
 class UserService(
-  private val userRepository: UserRepository
+    private val userRepository: UserRepository
 ) : ExistingObjectProcessor<ApiUser, User>() {
 
   fun createOrUpdateUser(
-    apiUser: ApiUser,
-    objectCollection: ObjectCollection? = null
-  ): User {
+      apiUser: ApiUser,
+      objectCollection: ObjectCollection? = null
+  ): ObjectImportResult {
 
     val existingUser = userRepository.findByUserId(apiUser.metadata.userId)
 
-    if (existingUser != null) {
-      objectCollection?.assignObject(existingUser)
+    val user = existingUser?.apply {
+      if (existingUser.objectCollection != null
+          && existingUser.objectCollection?.name != objectCollection?.name) {
+        throw ObjectImportException(
+            resultCode = ObjectImportResult.ResultCode.OBJECT_COLLECTION_CONFLICT,
+            message = "Cannot import user ${apiUser.metadata.userId}, as it already exists and is " +
+            "assigned to a different object collection!")
+      }
 
-      existingUser.lastName = apiUser.spec.lastName
-      existingUser.firstName = apiUser.spec.firstName
-      existingUser.email = apiUser.spec.email
-      existingUser.objectCollection = objectCollection
-
-      return userRepository.save(existingUser)
-    }
-
-    val user = User(
-      userId = apiUser.metadata.userId,
-      email = apiUser.spec.email,
-      firstName = apiUser.spec.firstName,
       lastName = apiUser.spec.lastName
+      firstName = apiUser.spec.firstName
+      email = apiUser.spec.email
+    } ?: User(
+        userId = apiUser.metadata.userId,
+        email = apiUser.spec.email,
+        firstName = apiUser.spec.firstName,
+        lastName = apiUser.spec.lastName
     )
 
     objectCollection?.assignObject(user)
 
-    return userRepository.save(user)
+    userRepository.save(user)
+
+    return ObjectImportResult(
+        apiObject = user.userId,
+        status = ObjectImportResult.ImportStatus.SUCCESS
+    )
+
   }
 
   override fun matches(definition: ApiUser, entity: User): Boolean {

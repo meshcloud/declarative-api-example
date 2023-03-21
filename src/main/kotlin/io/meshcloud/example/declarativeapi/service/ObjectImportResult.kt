@@ -15,8 +15,7 @@ data class ObjectImportResult(
   }
 
   enum class ResultCode {
-    USER_NOT_FOUND,
-    GROUP_NOT_FOUND,
+    OBJECT_COLLECTION_CONFLICT,
     SERVER_ERROR
   }
 }

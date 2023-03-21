@@ -11,35 +11,49 @@ import org.springframework.stereotype.Component
 
 @Component
 class GroupService(
-  private val userRepository: UserRepository,
-  private val groupRepository: GroupRepository
-): ExistingObjectProcessor<ApiGroup, Group>() {
+    private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository
+) : ExistingObjectProcessor<ApiGroup, Group>() {
 
   fun createOrUpdateGroup(
-    apiGroup: ApiGroup,
-    objectCollection: ObjectCollection? = null
-  ): Group {
+      apiGroup: ApiGroup,
+      objectCollection: ObjectCollection? = null
+  ): ObjectImportResult {
 
     val existingGroup = groupRepository.findByName(apiGroup.metadata.name)
 
-    val expectedMembers = apiGroup.spec.members
-      .mapNotNull { userRepository.findByUserId(it) }
+    val resolvedMembers = apiGroup.spec.members
+        .map { it to userRepository.findByUserId(it) }
 
-    if (existingGroup != null) {
-      objectCollection?.assignObject(existingGroup)
+    val expectedMembers = resolvedMembers.mapNotNull { it.second }
+
+    val group = existingGroup?.apply {
+      if (this.objectCollection != null
+          && this.objectCollection?.name != objectCollection?.name) {
+        throw ObjectImportException(
+            resultCode = ObjectImportResult.ResultCode.OBJECT_COLLECTION_CONFLICT,
+            message = "Cannot import group ${apiGroup.metadata.name}, as it already exists and is " +
+            "assigned to a different object collection!")
+      }
+
       existingGroup.members = expectedMembers
-
-      return groupRepository.save(existingGroup)
-    }
-
-    val group = Group(
-      name = apiGroup.metadata.name,
-      members = expectedMembers
+    } ?: Group(
+        name = apiGroup.metadata.name,
+        members = expectedMembers
     )
 
     objectCollection?.assignObject(group)
 
-    return groupRepository.save(group)
+    groupRepository.save(group)
+
+    val missingMembers = resolvedMembers.filter { it.second == null }.map { it.first }
+
+    return ObjectImportResult(
+        apiObject = group.name,
+        status = ObjectImportResult.ImportStatus.SUCCESS,
+        message = "The Group has been imported, but the following members are missing " +
+            "as those users don't exist: ${missingMembers}"
+    )
   }
 
   override fun matches(definition: ApiGroup, entity: Group): Boolean {

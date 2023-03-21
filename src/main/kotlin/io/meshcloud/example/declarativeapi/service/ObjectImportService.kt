@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class ObjectImportService(
-    private val mapperService: ObjectMapperService,
+    private val mappingService: ObjectMapperService,
     private val objectCollectionService: ObjectCollectionService,
     private val userService: UserService,
     private val groupService: GroupService
@@ -27,7 +27,7 @@ class ObjectImportService(
       return buildSingleResultWithError("ObjectCollection", e.message)
     }
 
-    val objects = mapperService.mapToObjectList(body)
+    val objects = mappingService.mapToObjectList(body)
 
     return deleteObjectsIfCollectionUsed(objects, objectCollection) +
         createOrUpdateObjects(objects, objectCollection)

@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component
 
 @Component
 class ObjectImportService(
-  private val mapperService: ObjectMapperService,
-  private val objectCollectionService: ObjectCollectionService,
-  private val userService: UserService,
-  private val groupService: GroupService
+    private val mapperService: ObjectMapperService,
+    private val objectCollectionService: ObjectCollectionService,
+    private val userService: UserService,
+    private val groupService: GroupService
 ) {
 
   fun import(
-    body: String,
-    objectCollectionName: String? = null
+      body: String,
+      objectCollectionName: String? = null
   ): List<ObjectImportResult> {
 
     val objectCollection = try {
@@ -27,21 +27,15 @@ class ObjectImportService(
       return buildSingleResultWithError("ObjectCollection", e.message)
     }
 
-    val objects = mapperService.convertJsonToMap(body)
-      .map {
-        mapperService.mapToObject(it as HashMap<String, Any>)
-      }
-      .sortedWith(IApiObject.ORDER)
+    val objects = mapperService.mapToObjectList(body)
 
-    return deleteObjectsIfCollectionUsed(objects, objectCollection) + createOrUpdateObjects(
-      objects,
-      objectCollection
-    )
+    return deleteObjectsIfCollectionUsed(objects, objectCollection) +
+        createOrUpdateObjects(objects, objectCollection)
   }
 
   private fun deleteObjectsIfCollectionUsed(
-    objects: List<IApiObject>,
-    objectCollection: ObjectCollection?
+      objects: List<IApiObject>,
+      objectCollection: ObjectCollection?
   ): List<ObjectImportResult> {
     if (objectCollection == null) {
       return mutableListOf()
@@ -50,58 +44,58 @@ class ObjectImportService(
     return exitingObjectProcessors().flatMap { processor ->
       processor.deleteNotSpecifiedEntities(objects, objectCollection).map {
         ObjectImportResult(
-          apiObject = it.meaningfulIdentifier,
-          status = if (it.success)
-            ObjectImportResult.ImportStatus.DELETED
-          else
-            ObjectImportResult.ImportStatus.DELETE_FAILED,
-          message = it.message
+            apiObject = it.meaningfulIdentifier,
+            status = if (it.success)
+              ObjectImportResult.ImportStatus.DELETED
+            else
+              ObjectImportResult.ImportStatus.DELETE_FAILED,
+            message = it.message
         )
       }
     }
   }
 
   private fun exitingObjectProcessors(): List<ExistingObjectProcessor<out IApiObject, *>> = listOf(
-    userService,
-    groupService
+      userService,
+      groupService
   )
 
   private fun createOrUpdateObjects(
-    objects: List<IApiObject>,
-    objectCollection: ObjectCollection?
+      objects: List<IApiObject>,
+      objectCollection: ObjectCollection?
   ): List<ObjectImportResult> {
 
     return objects.map { obj ->
       try {
         when (obj.kind) {
           ObjectKind.User -> userService.createOrUpdateUser(
-            obj as ApiUser,
-            objectCollection
+              obj as ApiUser,
+              objectCollection
           )
           ObjectKind.Group -> groupService.createOrUpdateGroup(
-            obj as ApiGroup,
-            objectCollection
+              obj as ApiGroup,
+              objectCollection
           )
         }
       } catch (e: ObjectCollectionAssignmentException) {
         ObjectImportResult(
-          apiObject = obj.meaningfulIdentifier,
-          status = ObjectImportResult.ImportStatus.FAILED,
-          message = e.message,
+            apiObject = obj.meaningfulIdentifier,
+            status = ObjectImportResult.ImportStatus.FAILED,
+            message = e.message,
         )
       } catch (e: ObjectImportException) {
         ObjectImportResult(
-          apiObject = obj.meaningfulIdentifier,
-          status = ObjectImportResult.ImportStatus.FAILED,
-          message = e.message,
-          resultCode = e.resultCode
+            apiObject = obj.meaningfulIdentifier,
+            status = ObjectImportResult.ImportStatus.FAILED,
+            message = e.message,
+            resultCode = e.resultCode
         )
       } catch (e: Exception) {
         ObjectImportResult(
-          apiObject = obj.meaningfulIdentifier,
-          status = ObjectImportResult.ImportStatus.FAILED,
-          message = e.message,
-          resultCode = ObjectImportResult.ResultCode.SERVER_ERROR
+            apiObject = obj.meaningfulIdentifier,
+            status = ObjectImportResult.ImportStatus.FAILED,
+            message = e.message,
+            resultCode = ObjectImportResult.ResultCode.SERVER_ERROR
         )
       }
     }
@@ -125,11 +119,11 @@ class ObjectImportService(
 
   private fun buildSingleResultWithError(objectName: String, message: String?): List<ObjectImportResult> {
     return listOf(
-      ObjectImportResult(
-        apiObject = objectName,
-        status = ObjectImportResult.ImportStatus.FAILED,
-        message = message
-      )
+        ObjectImportResult(
+            apiObject = objectName,
+            status = ObjectImportResult.ImportStatus.FAILED,
+            message = message
+        )
     )
   }
 }

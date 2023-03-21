@@ -2,6 +2,7 @@ package io.meshcloud.example.declarativeapi.service
 
 import io.meshcloud.example.declarativeapi.entities.Group
 import io.meshcloud.example.declarativeapi.entities.ObjectCollection
+import io.meshcloud.example.declarativeapi.entities.User
 import io.meshcloud.example.declarativeapi.model.ApiGroup
 import io.meshcloud.example.declarativeapi.model.IApiObject
 import io.meshcloud.example.declarativeapi.repositories.GroupRepository
@@ -27,20 +28,9 @@ class GroupService(
 
     val expectedMembers = resolvedMembers.mapNotNull { it.second }
 
-    val group = existingGroup?.apply {
-      if (this.objectCollection != null
-          && this.objectCollection?.name != objectCollection?.name) {
-        throw ObjectImportException(
-            resultCode = ObjectImportResult.ResultCode.OBJECT_COLLECTION_CONFLICT,
-            message = "Cannot import group ${apiGroup.metadata.name}, as it already exists and is " +
-            "assigned to a different object collection!")
-      }
-
-      existingGroup.members = expectedMembers
-    } ?: Group(
-        name = apiGroup.metadata.name,
-        members = expectedMembers
-    )
+    val group = existingGroup?.let {
+      updateExistingGroup(it, objectCollection, apiGroup, expectedMembers)
+    } ?: createGroup(apiGroup, expectedMembers)
 
     objectCollection?.assignObject(group)
 
@@ -55,6 +45,31 @@ class GroupService(
             "as those users don't exist: ${missingMembers}"
     )
   }
+
+  private fun updateExistingGroup(
+      existingGroup: Group,
+      objectCollection: ObjectCollection?,
+      apiGroup: ApiGroup,
+      expectedMembers: List<User>
+  ): Group {
+    if (existingGroup.objectCollection != null
+        && existingGroup.objectCollection?.name != objectCollection?.name) {
+      throw ObjectImportException(
+          resultCode = ObjectImportResult.ResultCode.OBJECT_COLLECTION_CONFLICT,
+          message = "Cannot import group ${apiGroup.metadata.name}, as it already exists and is " +
+              "assigned to a different object collection!")
+    }
+
+    existingGroup.members = expectedMembers
+
+    return existingGroup
+  }
+
+  private fun createGroup(apiGroup: ApiGroup, expectedMembers: List<User>) =
+      Group(
+          name = apiGroup.metadata.name,
+          members = expectedMembers
+      )
 
   override fun matches(definition: ApiGroup, entity: Group): Boolean {
     return definition.metadata.name.equals(entity.name, ignoreCase = true)

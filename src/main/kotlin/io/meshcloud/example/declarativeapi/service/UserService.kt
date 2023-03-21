@@ -20,24 +20,9 @@ class UserService(
 
     val existingUser = userRepository.findByUserId(apiUser.metadata.userId)
 
-    val user = existingUser?.apply {
-      if (existingUser.objectCollection != null
-          && existingUser.objectCollection?.name != objectCollection?.name) {
-        throw ObjectImportException(
-            resultCode = ObjectImportResult.ResultCode.OBJECT_COLLECTION_CONFLICT,
-            message = "Cannot import user ${apiUser.metadata.userId}, as it already exists and is " +
-            "assigned to a different object collection!")
-      }
-
-      lastName = apiUser.spec.lastName
-      firstName = apiUser.spec.firstName
-      email = apiUser.spec.email
-    } ?: User(
-        userId = apiUser.metadata.userId,
-        email = apiUser.spec.email,
-        firstName = apiUser.spec.firstName,
-        lastName = apiUser.spec.lastName
-    )
+    val user = existingUser?.let {
+      updateExistingUser(it, objectCollection, apiUser)
+    } ?: createNewUser(apiUser)
 
     objectCollection?.assignObject(user)
 
@@ -49,6 +34,29 @@ class UserService(
     )
 
   }
+
+  private fun updateExistingUser(existingUser: User, objectCollection: ObjectCollection?, apiUser: ApiUser): User {
+    if (existingUser.objectCollection != null
+        && existingUser.objectCollection?.name != objectCollection?.name) {
+      throw ObjectImportException(
+          resultCode = ObjectImportResult.ResultCode.OBJECT_COLLECTION_CONFLICT,
+          message = "Cannot import user ${apiUser.metadata.userId}, as it already exists and is " +
+              "assigned to a different object collection!")
+    }
+
+    existingUser.lastName = apiUser.spec.lastName
+    existingUser.firstName = apiUser.spec.firstName
+    existingUser.email = apiUser.spec.email
+
+    return existingUser
+  }
+
+  private fun createNewUser(apiUser: ApiUser) = User(
+      userId = apiUser.metadata.userId,
+      email = apiUser.spec.email,
+      firstName = apiUser.spec.firstName,
+      lastName = apiUser.spec.lastName
+  )
 
   override fun matches(definition: ApiUser, entity: User): Boolean {
     return definition.metadata.userId.equals(entity.userId, ignoreCase = true)

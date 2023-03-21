@@ -51,7 +51,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n    {\n        \"kind\": \"user\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"userId\": \"test-user\"\n        },\n        \"spec\": {\n            \"firstName\": \"Test\",\n            \"lastName\": \"User\",\n            \"email\": \"test@user.de\"\n        }\n    },\n    {\n        \"kind\": \"user\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"userId\": \"test-user2\"\n        },\n        \"spec\": {\n            \"firstName\": \"Test\",\n            \"lastName\": \"User2\",\n            \"email\": \"test2@user.de\"\n        }\n    },\n    {\n        \"kind\": \"group\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"name\": \"my-group\"\n        },\n        \"spec\": {\n            \"members\": [\n                \"test-user2\"\n            ]\n        }\n    }\n]",
+					"raw": "[\n    {\n        \"kind\": \"user\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"userId\": \"test-user\"\n        },\n        \"spec\": {\n            \"firstName\": \"Test\",\n            \"lastName\": \"User\",\n            \"email\": \"test@user.de\"\n        }\n    },\n    {\n        \"kind\": \"user\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"userId\": \"test-user2\"\n        },\n        \"spec\": {\n            \"firstName\": \"Test\",\n            \"lastName\": \"User2\",\n            \"email\": \"test2@user.de\"\n        }\n    },\n    {\n        \"kind\": \"group\",\n        \"apiVersion\": \"v1\",\n        \"metadata\": {\n            \"name\": \"my-group\"\n        },\n        \"spec\": {\n            \"members\": [\n                \"test-user2\",\n                \"not-existing\"\n            ]\n        }\n    }\n]",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -59,7 +59,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8080/objects?objectCollection=my-test&owner=ich",
+					"raw": "http://localhost:8080/objects?objectCollection=my-test",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -72,10 +72,6 @@
 						{
 							"key": "objectCollection",
 							"value": "my-test"
-						},
-						{
-							"key": "owner",
-							"value": "ich"
 						}
 					]
 				}
@@ -89,7 +85,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"my-test\",\n    \"owner\": \"ich\"\n}",
+					"raw": "{\n    \"name\": \"my-test\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
